@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.dialects.postgresql import TSVECTOR, ARRAY
 
 
 Base = declarative_base()
@@ -14,7 +14,7 @@ class TSIndex(Base):
 
     # columns
     id = sa.Column(sa.BigInteger, primary_key=True)
-    attribute_name = sa.Column(sa.String(60), nullable=False)
+    attribute_name = sa.Column(ARRAY(sa.String(60)), nullable=False)
     tokens = sa.Column(TSVECTOR, nullable=False)
 
 

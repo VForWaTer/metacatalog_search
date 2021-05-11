@@ -18,37 +18,37 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-# def install_and_migrate():
-#     try:
-#         from metacatalog_corr import manage
-#     except ModuleNotFoundError:
-#         pass
+def install_and_migrate():
+    try:
+        from metacatalog_search import manage
+    except ModuleNotFoundError:
+        pass
 
-#     try:
-#         manage.install(verbose=True)
-#     except:
-#         pass
+    try:
+        manage.install(verbose=True)
+    except:
+        pass
 
 
 class PostDevelopCommand(develop):
     def run(self):
         print('DEVELOP RUNNING')
         develop.run(self)
-#        install_and_migrate()
+        install_and_migrate()
 
 
 class PostInstallCommand(install):
     def run(self):
         print('INSTALL RUNNNIG')
         install.run(self)
-#        install_and_migrate()
+        install_and_migrate()
 
 
 class PostEggInfoCommand(egg_info):
     def run(self):
         print('EGG_INFO RUNNING')
         egg_info.run(self)
-#        install_and_migrate()
+        install_and_migrate()
 
 
 setup(

@@ -1,3 +1,4 @@
 metacatalog
 sqlalchemy
 psycopg2-binary
+tqdm

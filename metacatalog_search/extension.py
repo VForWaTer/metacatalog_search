@@ -95,6 +95,7 @@ def create_search_index(
     
     # create the model
     stmt = stmt.values({
+        'entry_id': self.id,
         'attribute_names': attribute_names,
         'tokens': func.to_tsvector(SearchExtension.LANGUAGE, ' '.join(text_chunks))
     })

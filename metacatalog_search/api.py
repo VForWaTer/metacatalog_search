@@ -65,7 +65,7 @@ def search(
         query = query.join(TSIndex)
     
     # Add the full text search filter
-    query = query.filter(TSIndex.tokens.match(search_string, postgresql_regconfig=SearchExtension.LANGUAGE))
+    query = query.filter(TSIndex.tokens.match(f"'{search_string}'", postgresql_regconfig=SearchExtension.LANGUAGE))
 
     # TODO: here we could do a order by relevance somehow
 

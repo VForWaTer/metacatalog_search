@@ -29,12 +29,12 @@ def merge_declarative_base(other: sa.MetaData):
     # add these tables to the other metadata
     TSIndex.__table__.to_metadata(other)
 
-    # # add relationships
-    # TSIndex.entry = relationship('Entry')
-
     # add to models
     from metacatalog import models
     models.TSIndex = TSIndex
+
+    # add relationships
+    TSIndex.entry = relationship(models.Entry)
 
 
 def _connect_to_metacatalog():

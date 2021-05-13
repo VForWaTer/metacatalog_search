@@ -23,15 +23,20 @@ def merge_declarative_base(other: sa.MetaData):
     Merge this declarative base with metacatalog declarative base
     to enable foreign keys and relationships between both classes.
     """
+    from metacatalog import models
+
     # build missing columns
-    _connect_to_metacatalog()
+    #_connect_to_metacatalog()
+    if not hasattr(TSIndex, 'entry_id'):
+        TSIndex.entry_id  = sa.Column(sa.Integer, sa.ForeignKey(models.Entry.id), nullable=False)
 
     # add these tables to the other metadata
     TSIndex.__table__.to_metadata(other)
 
-    # import here
-    from metacatalog import models
-
+    # add relationships
+    if not hasattr(TSIndex, 'entry'):
+        TSIndex.entry = relationship(models.Entry)
+    
     # add to models
     models.TSIndex = TSIndex
 

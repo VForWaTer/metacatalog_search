@@ -60,11 +60,7 @@ def search(
     # import here, due to circular imports
     from metacatalog_search.extension import SearchExtension
     from metacatalog import models
-    
-    # add relationships
-    if not hasattr(TSIndex, 'entry'):
-        TSIndex.entry = relationship(models.Entry)
-    
+        
     # check if a base query was passed
     if query is None:
         query = session.query(Entry).join(TSIndex)

@@ -32,9 +32,6 @@ def merge_declarative_base(other: sa.MetaData):
     # import here
     from metacatalog import models
 
-    # add relationships
-    TSIndex.entry = relationship(models.Entry)
-
     # add to models
     models.TSIndex = TSIndex
 

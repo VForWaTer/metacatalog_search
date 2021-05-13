@@ -1,7 +1,8 @@
 from typing import Union, List
 from sqlalchemy.orm import object_session
-from sqlalchemy import insert, update, exists
+from sqlalchemy import insert, update, delete, exists
 from sqlalchemy import func
+from sqlalchemy import event
 from metacatalog.ext.base import MetacatalogExtensionInterface
 from metacatalog.models import Entry
 from metacatalog import api
@@ -18,7 +19,7 @@ def create_search_index(
     self: Entry,
     attributes: Union[str, List[str]] = 'default',
     if_exists = 'replace',
-    return_on_success = False
+    commit=True,
     ):
     """
     (Re-)create full-text search vectors for this Entry. 
@@ -45,15 +46,12 @@ def create_search_index(
         If a Entry already was indexed, if will by default be replaced. 
         With ``'omit'``, the re-index will be skipped and the model is returned.
         If ``'raise'`` a :any:`AttributeError` will be raised. 
-    return_on_success : bool
-        If True, the created or updated full text search index will be returned
-        on success. For this to happen, it has to be queried from the database
-        and is therefore set to False by default.
+    commit : bool
+        If True, the created or updated full text search index will be directly
+        added to thedatabase. If False, the method will return the respective
+        SQL statement.
 
     """
-    # get the extension - to load the language
-    ext = SearchExtension.LANGUAGE
-
     # get a session
     session = object_session(self)
 
@@ -101,6 +99,9 @@ def create_search_index(
         'tokens': func.to_tsvector(SearchExtension.LANGUAGE, ' '.join(text_chunks))
     })
 
+    if not commit:
+        return stmt
+
     # commit
     try:
         session.execute(stmt)
@@ -109,9 +110,34 @@ def create_search_index(
         session.rollback()
         raise e
 
-    # return
-    if return_on_success:
-        return session.query(models.TSIndex).where(models.TSIndex.entry_id == self.id).one()
+
+def after_entry_insert(mapper, connection, target: Entry):
+    """
+    Call 
+    """
+    # get the correct statement
+    # TODO how to handle the attributes list here?
+    stmt = target.create_search_index(commit=False)
+
+    # execute
+    connection.execute(stmt)
+
+
+def after_entry_update(mapper, connection, target: Entry):
+    """
+    Re-index the Entry after update
+    """
+    # get the the update statement
+    stmt = target.create_search_index(commit=False)
+    connection.execute(stmt)
+
+
+def before_entry_delete(mapper, connection, target: Entry):
+    """
+    Delete the search index before the Entry is deleted
+    """
+    stmt = delete(models.TSIndex).where(models.TSIndex.entry_id==target.id)
+    connection.execute(stmt)
 
 
 class SearchExtension(MetacatalogExtensionInterface):
@@ -130,7 +156,9 @@ class SearchExtension(MetacatalogExtensionInterface):
     index on Entry insert and update query. 
 
     """
+    # TODO how to handle these settings better?
     LANGUAGE = 'english'
+    AUTOINDEX = True
 
     @classmethod
     def init_extension(cls):
@@ -143,11 +171,15 @@ class SearchExtension(MetacatalogExtensionInterface):
         # add new instance method to Entry
         Entry.create_search_index = create_search_index
 
-        # TODO: add new methods to API - check if this is working
+        # add new methods to API - check if this is working
         api.search = search
         api.reindex_search = reindex_search
 
         # TODO: add new event to index to Entry
+        if cls.AUTOINDEX:
+            event.listen(Entry, 'after_insert', after_entry_insert)
+            event.listen(Entry, 'after_update', after_entry_update)
 
-        # TODO: add delete event to Entry
+        #  add delete event to Entry
+        event.listen(Entry, 'before_delete', before_entry_delete)
         

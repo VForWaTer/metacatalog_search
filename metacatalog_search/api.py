@@ -1,4 +1,3 @@
-from metacatalog_search.extension import SearchExtension
 from typing import Union, List
 import sqlalchemy as sa
 from sqlalchemy import func
@@ -57,6 +56,8 @@ def search(
         Defaults to False.
 
     """
+    # import here, due to circular imports
+    from metacatalog_search.extension import SearchExtension
     # check if a base query was passed
     if query is None:
         query = session.query(Entry).join(TSIndex)

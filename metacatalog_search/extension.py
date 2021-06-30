@@ -116,21 +116,23 @@ def after_entry_insert(mapper, connection, target: Entry):
     """
     Call 
     """
+    # TODO this is not yet working
     # get the correct statement
     # TODO how to handle the attributes list here?
-    stmt = target.create_search_index(commit=False)
+#    stmt = target.create_search_index(commit=False)
 
     # execute
-    connection.execute(stmt)
+#    connection.execute(stmt)
 
 
 def after_entry_update(mapper, connection, target: Entry):
     """
     Re-index the Entry after update
     """
+    # TODO make this work again somehow
     # get the the update statement
-    stmt = target.create_search_index(commit=False)
-    connection.execute(stmt)
+#    stmt = target.create_search_index(commit=False)
+#    connection.execute(stmt)
 
 
 def before_entry_delete(mapper, connection, target: Entry):
